@@ -1,8 +1,11 @@
 import pika
+import requests
+import urllib.parse
+import json
 
 from config import Config
 from utilities.exceptions import RabbitConnectionClosedError
-
+from requests.auth import HTTPBasicAuth
 
 class RabbitContext:
 
@@ -28,6 +31,13 @@ class RabbitContext:
         return self._channel
 
     def open_connection(self):
+        # Get hold of queue arguments (to allow connection to queues with dead letter configuration)
+        vhost_for_url = urllib.parse.quote(self._vhost, safe='')
+        queue_details = requests.get(
+            f'http://{Config.RABBITMQ_HOST}:{Config.RABBITMQ_HTTP_PORT}/api/queues/{vhost_for_url}/{self.queue_name}',
+            auth=HTTPBasicAuth(Config.RABBITMQ_USER, Config.RABBITMQ_PASSWORD)).json()
+        queue_arguments = queue_details['arguments']
+
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(self._host,
                                       self._port,
@@ -35,7 +45,8 @@ class RabbitContext:
                                       pika.PlainCredentials(self._user, self._password)))
 
         self._channel = self._connection.channel()
-        self.queue_declare_result = self._channel.queue_declare(queue=self.queue_name, durable=True)
+        self.queue_declare_result = self._channel.queue_declare(queue=self.queue_name, durable=True,
+                arguments=queue_arguments)
 
         return self._connection
 
