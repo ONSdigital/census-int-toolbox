@@ -19,17 +19,11 @@ def message_callback_function(ch, method, _properties, body, message_limit, mess
     global found_messages
     seen_messages = seen_messages + 1
 
-    print ("In callback ...")
-    print("  Body: " + str(message_body_search))
-    print("  Hash: " + str(message_hash_search))
-
     if message_body_search:
-        print("Doing body search")
         if message_body_search.lower() in body.decode('utf-8').lower():
             found_messages = found_messages + 1
             print_message(_properties, body)
     elif message_hash_search:
-        print("Doing hash search")
         if hashlib.sha256(body).hexdigest() == message_hash_search:
             found_messages = found_messages + 1
             if action == 'DELETE':
@@ -106,9 +100,6 @@ def main():
     if args.message_hash_search and args.action is None:
         print(colored(f'ERROR: Must specify an action for specific message: DELETE, MOVE or VIEW', 'red'))
         return
-
-    print("Source queue:")
-    print(args.source_queue_name)
 
     init_rabbit(args.source_queue_name)
     queue_qty = get_queue_qty()
