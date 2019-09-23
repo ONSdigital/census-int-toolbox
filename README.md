@@ -4,53 +4,61 @@ This project contains RabbitMQ utilities for RH support.
 
 ## How to use - Message Manipulator
 
-View messages on a queue (default 100 max):
+View topmost messages on a queue (default 100 max):
    `queuetool <queue name>`
 
-View messages on a queue with bigger limit:
+View specific number of messages at the head of a queue:
    `queuetool <queue name> -l <limit>`
    
-   
-Search for message(s) on a queue:
+Search for message(s) on a queue by their content:
    `queuetool <queue name> -s <search text>`
-   
+     
+Search specific number of topmost messages(s) on a queue by their content:
+   `queuetool <queue name> -s <search text> -l <limit>`
+     
+View a message based on it's hashcode:
+   `queuetool <queue name> <message hash> VIEW`
    
 Delete message from a queue:
    `queuetool <queue name> <message hash> DELETE`
    
-   
 Move message from one queue to another:
    `queuetool <queue name> <message hash> MOVE <destination queue>`
    
-## How to use - Find Queues with Poison Messages
-
-Find queues with high redelivery rate:
-   `findbadmessages`
+If you don't want to use the 'queuetool' alias the commands can be run directly by substituting
+'python queue_manipulator.py'
    
 
-## How to use - Find and remove messages on pubsub
+## How to see key queue statistics
 
-View messages on pubsub subscription:
-   `python get_pubsub_messages.py <subscription name> <subscription project id>`
-   
-View messages on a pubsub subscription with bigger limit:
-   `python get_pubsub_messages.py <subscription name> <subscription project id> -l <limit>`
-   
-Search for a message:
-   `python get_pubsub_messages.py <subscription name> <subscription project id> -s <search term>`
+To see key information about each queue:
+   `python poison_message_queue_finder.py`
 
-Delete message on pubsub subscription:   
-   `python get_pubsub_messages.py <subscription name> <subscription project id> <message_id> DELETE`
-   
+This will list information such as queue depth and the current processing rate. Note that the
+numbers for the publish_rate and ack_rate have a delay of several seconds.
+
+The 'consumer_count' can be used to spot 'zombie' processes. If the consuming process has suffered a Rabbit 
+problem and appears to be working, but is not actually consuming messages, then the key indicator is that
+the 'consumer_count' will be '0'.
 
 
 ## Running in Kubernetes
 To run the toolbox in Kubernetes 
 
 ```bash
-./run_in_kubernetes.sh
+$ ./run_in_kubernetes.sh
 ```
 You can also run it with a specific image rather than the default with
 ```bash
 IMAGE=fullimagelocation ./run_in_kubernetes.sh
+```
+
+
+## Running against a local Rabbit
+To run on a developer's machine with a local Rabbit the following environment variables
+need to be set before running :
+
+```
+$ export RABBITMQ_HTTP_PORT=46672
+$ export RABBITMQ_SERVICE_PORT=35672
 ```
