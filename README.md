@@ -43,15 +43,17 @@ the 'consumer_count' will be '0'.
 
 
 ## Running in Kubernetes
-To run the toolbox in Kubernetes 
-
+To run the toolbox in a kubernetes environment, you'll have to create the deployment using `census-rm-toolbox-deployment.yml`
 ```bash
-$ ./run_in_kubernetes.sh
+make apply-deployment
 ```
-You can also run it with a specific image rather than the default with
+Once the pod is up, you can connect to it:
 ```bash
-IMAGE=fullimagelocation ./run_in_kubernetes.sh
+make connect-to-pod
 ```
+Once you're finished with the pod, you can remove it from your kubernetes environment:
+```bash
+make delete-pod
 
 
 ## Running against a local Rabbit
