@@ -11,7 +11,6 @@ RUN apt-get update
 RUN apt-get -yq install curl
 RUN apt-get -yq install jq
 RUN apt-get -yq install vim-tiny
-RUN apt-get -yq install postgresql-client || true
 RUN apt-get -yq clean
 
 WORKDIR /app
@@ -22,7 +21,6 @@ RUN pipenv install --system --deploy
 RUN chmod +x /app/splashscreen.sh
 RUN chmod +x /app/watch_for_poison_messages.sh
 RUN chmod +x /app/aliases.sh
-RUN chmod +x /app/watch_for_slow_event_processing.sh
 RUN echo "source /app/aliases.sh" >> /root/.bashrc
 RUN echo "/app/splashscreen.sh" >> /root/.bashrc
 RUN echo 'PS1="[$PROJECT_NAME]-TOOLZ🔥> "' >> /root/.bashrc
