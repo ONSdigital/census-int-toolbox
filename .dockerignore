@@ -1,0 +1,8 @@
+.flake8
+.gitignore
+*.yml
+.idea
+.git
+.dockerignore
+__pycache__
+/toolbox/tests

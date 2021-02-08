@@ -1,11 +1,9 @@
 import pika
-import requests
-import urllib.parse
-import json
+from pika.spec import PERSISTENT_DELIVERY_MODE
 
-from config import Config
-from utilities.exceptions import RabbitConnectionClosedError
-from requests.auth import HTTPBasicAuth
+from toolbox.config import Config
+from toolbox.utilities.exceptions import RabbitConnectionClosedError
+
 
 class RabbitContext:
 
@@ -31,13 +29,6 @@ class RabbitContext:
         return self._channel
 
     def open_connection(self):
-        # Get hold of queue arguments (to allow connection to queues with dead letter configuration)
-        vhost_for_url = urllib.parse.quote(self._vhost, safe='')
-        queue_details = requests.get(
-            f'http://{Config.RABBITMQ_HOST}:{Config.RABBITMQ_HTTP_PORT}/api/queues/{vhost_for_url}/{self.queue_name}',
-            auth=HTTPBasicAuth(Config.RABBITMQ_USER, Config.RABBITMQ_PASSWORD)).json()
-        queue_arguments = queue_details['arguments']
-
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(self._host,
                                       self._port,
@@ -45,12 +36,9 @@ class RabbitContext:
                                       pika.PlainCredentials(self._user, self._password)))
 
         self._channel = self._connection.channel()
-        
+
         # Limit to 100 messages to avoid rabbit 'issues'
         self._channel.basic_qos(prefetch_count=100)
-        
-        self.queue_declare_result = self._channel.queue_declare(queue=self.queue_name, durable=True,
-                arguments=queue_arguments)
 
         return self._connection
 
@@ -67,7 +55,8 @@ class RabbitContext:
             exchange=exchange or self._exchange,
             routing_key=routing_key or self.queue_name,
             body=message,
-            properties=pika.BasicProperties(content_type=content_type, headers=headers))
+            properties=pika.BasicProperties(content_type=content_type, headers=headers,
+                                            delivery_mode=PERSISTENT_DELIVERY_MODE))
 
     def get_queue_message_qty(self):
         return self.queue_declare_result.method.message_count

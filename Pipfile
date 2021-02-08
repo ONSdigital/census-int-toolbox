@@ -4,13 +4,21 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+flake8 = "*"
+pytest-cov = "*"
 
 [packages]
+google-api-python-client = "*"
+oauth2client = "*"
 pika = "*"
 termcolor = "*"
 requests = "*"
 google-cloud-pubsub = "*"
 psycopg2-binary = "*"
+google-cloud-storage = "*"
+python-dateutil = "*"
+tonyg-rfc3339 = "*"
+retrying = "*"
 
 [requires]
 python_version = "3.7"
